@@ -6,6 +6,19 @@ using Unity.Collections;
 
 namespace Unity.Netcode
 {
+    public struct Metadata
+    {
+        public string ProtocolVersion;
+        public string NetworkConstants;
+        public string SortedEntryKeys;
+        public string TickRate;
+        public string ConnectionApproval;
+        public string ForceSamePrefabs;
+        public string EnableSceneManagement;
+        public string EnsureNetworkVariableLengthSafety;
+        public string RpcHashSize;
+    }
+    
     /// <summary>
     /// The configuration object used to start server, client and hosts
     /// </summary>
@@ -257,6 +270,18 @@ namespace Unity.Netcode
                 if (cache)
                 {
                     m_ConfigHash = XXHash.Hash64(writer.ToArray());
+                    Debug.LogFormat("Updating NetworkConfig hash to {0}, map is {1}", m_ConfigHash.Value, JsonUtility.ToJson(new Metadata 
+                    {
+                        ProtocolVersion = ProtocolVersion.ToString(),
+                        NetworkConstants = NetworkConstants.PROTOCOL_VERSION,
+                        SortedEntryKeys = string.Join(", ", NetworkPrefabOverrideLinks.OrderBy(x => x.Key).Select(x => x.Key)),
+                        TickRate = TickRate.ToString(),
+                        ConnectionApproval = ConnectionApproval.ToString(),
+                        ForceSamePrefabs = ForceSamePrefabs.ToString(),
+                        EnableSceneManagement = EnableSceneManagement.ToString(),
+                        EnsureNetworkVariableLengthSafety = EnsureNetworkVariableLengthSafety.ToString(),
+                        RpcHashSize = RpcHashSize.ToString(),
+                    }));
                     return m_ConfigHash.Value;
                 }
 
@@ -271,6 +296,7 @@ namespace Unity.Netcode
         /// <returns></returns>
         public bool CompareConfig(ulong hash)
         {
+            Debug.Log($"Received hash is {hash}, and local is {GetConfig()}");
             return hash == GetConfig();
         }
     }
