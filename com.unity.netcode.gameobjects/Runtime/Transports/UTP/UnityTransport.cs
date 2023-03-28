@@ -145,6 +145,17 @@ namespace Unity.Netcode.Transports.UTP
         [Tooltip("Which protocol should be selected (Relay/Non-Relay).")]
         [SerializeField]
         private ProtocolType m_ProtocolType;
+        
+        [Tooltip("The maximum size of udp packets that can be sent by the transport.")]
+        [SerializeField]
+        private int m_MaxPacketSize = NetworkParameterConstants.MTU - 23;
+
+        /// <summary>The maximum size of udp packets that can be sent by the transport.</summary>
+        public int MaxPacketSize
+        {
+            get => m_MaxPacketSize;
+            set => m_MaxPacketSize = value;
+        }
 
         [Tooltip("The maximum amount of packets that can be in the internal send/receive queues. Basically this is how many packets can be sent/received in a single update/frame.")]
         [SerializeField]
@@ -678,7 +689,7 @@ namespace Unity.Netcode.Transports.UTP
 
             while (!queue.IsEmpty)
             {
-                var result = m_Driver.BeginSend(pipeline, connection, out var writer);
+                var result = m_Driver.BeginSend(pipeline, connection, out var writer, MaxPacketSize);
                 if (result != (int)Networking.Transport.Error.StatusCode.Success)
                 {
                     Debug.LogError("Error sending the message: " +
